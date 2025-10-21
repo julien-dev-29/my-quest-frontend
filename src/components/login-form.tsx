@@ -1,21 +1,37 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { NavLink } from "react-router"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NavLink } from "react-router";
+import type { User } from "@/types/types";
+import type { FormEvent } from "react";
+
+type Props = {
+  className: string;
+  user: User;
+  setUser: React.Dispatch<React.SetStateAction<User>>;
+  handleLogin: (e: FormEvent) => void;
+};
 
 export function LoginForm({
+  user,
+  setUser,
+  handleLogin,
   className,
   ...props
-}: React.ComponentProps<"form">) {
+}: Props) {
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form
+      className={cn("flex flex-col gap-6", className)}
+      {...props}
+      onSubmit={handleLogin}
+    >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Login to your account</h1>
@@ -25,7 +41,14 @@ export function LoginForm({
         </div>
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <Input
+            id="email"
+            type="email"
+            placeholder="m@example.com"
+            value={user.email}
+            onChange={(e) => setUser({ ...user, email: e.target.value })}
+            required
+          />
         </Field>
         <Field>
           <div className="flex items-center">
@@ -37,7 +60,13 @@ export function LoginForm({
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required />
+          <Input
+            id="password"
+            type="password"
+            value={user.password}
+            onChange={(e) => setUser({ ...user, password: e.target.value })}
+            required
+          />
         </Field>
         <Field>
           <Button type="submit">Login</Button>
@@ -55,12 +84,15 @@ export function LoginForm({
           </Button>
           <FieldDescription className="text-center">
             Don&apos;t have an account?{" "}
-            <NavLink to="/auth/register" className="underline underline-offset-4">
+            <NavLink
+              to="/auth/register"
+              className="underline underline-offset-4"
+            >
               Sign up
             </NavLink>
           </FieldDescription>
         </Field>
       </FieldGroup>
     </form>
-  )
+  );
 }

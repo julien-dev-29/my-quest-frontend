@@ -1,21 +1,37 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { NavLink } from "react-router"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NavLink } from "react-router";
+import type { User } from "@/types/types";
+import type { FormEvent } from "react";
+
+type Props = {
+  user: User;
+  setUser: React.Dispatch<React.SetStateAction<User>>;
+  className: string;
+  handleRegister: (e: FormEvent) => void;
+};
 
 export function SignupForm({
+  user,
+  setUser,
   className,
+  handleRegister,
   ...props
-}: React.ComponentProps<"form">) {
+}: Props) {
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form
+      className={cn("flex flex-col gap-6", className)}
+      {...props}
+      onSubmit={handleRegister}
+    >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Create your account</h1>
@@ -24,12 +40,26 @@ export function SignupForm({
           </p>
         </div>
         <Field>
-          <FieldLabel htmlFor="name">Full Name</FieldLabel>
-          <Input id="name" type="text" placeholder="John Doe" required />
+          <FieldLabel htmlFor="username">Username</FieldLabel>
+          <Input
+            id="username"
+            type="text"
+            placeholder="John Doe"
+            value={user.username}
+            onChange={(e) => setUser({ ...user, username: e.target.value })}
+            required
+          />
         </Field>
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <Input
+            id="email"
+            type="email"
+            placeholder="m@example.com"
+            value={user.email}
+            onChange={(e) => setUser({ ...user, email: e.target.value })}
+            required
+          />
           <FieldDescription>
             We&apos;ll use this to contact you. We will not share your email
             with anyone else.
@@ -37,7 +67,13 @@ export function SignupForm({
         </Field>
         <Field>
           <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input id="password" type="password" required />
+          <Input
+            id="password"
+            type="password"
+            value={user.password}
+            onChange={(e) => setUser({ ...user, password: e.target.value })}
+            required
+          />
           <FieldDescription>
             Must be at least 8 characters long.
           </FieldDescription>
@@ -67,5 +103,5 @@ export function SignupForm({
         </Field>
       </FieldGroup>
     </form>
-  )
+  );
 }
