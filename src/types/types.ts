@@ -18,13 +18,13 @@ export type User = {
 
 export type Post = {
     id?: string
-    author: User
+    author?: User
     content: string
-    media: Media[]
-    comments: Comment[]
-    likes: Like[]
-    createdAt: Date
-    updatedAt: Date
+    media?: Media[]
+    comments?: Comment[]
+    likes?: Like[]
+    createdAt?: Date
+    updatedAt?: Date
 }
 
 export type Comment = {

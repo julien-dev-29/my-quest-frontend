@@ -1,36 +1,55 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NavLink } from "react-router";
-import type { User } from "@/types/types";
-import type { FormEvent } from "react";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-type Props = {
-  user: User;
-  setUser: React.Dispatch<React.SetStateAction<User>>;
-  className: string;
-  handleRegister: (e: FormEvent) => void;
-};
+const formSchema = z
+  .object({
+    username: z.string(),
+    email: z.email(),
+    password: z.string(),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords must be the same",
+    path: ["confirmPassword"], // cible le champ confirmPassword pour afficher l’erreur
+  });
 
 export function SignupForm({
-  user,
-  setUser,
   className,
-  handleRegister,
   ...props
-}: Props) {
+}: React.ComponentProps<"form">) {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  function onSubmit(data: z.infer<typeof formSchema>) {
+    // Do something with the form values.
+    console.log(data);
+  }
+
   return (
     <form
       className={cn("flex flex-col gap-6", className)}
       {...props}
-      onSubmit={handleRegister}
+      onSubmit={form.handleSubmit(onSubmit)}
     >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
@@ -39,41 +58,37 @@ export function SignupForm({
             Fill in the form below to create your account
           </p>
         </div>
-        <Field>
-          <FieldLabel htmlFor="username">Username</FieldLabel>
-          <Input
-            id="username"
-            type="text"
-            placeholder="John Doe"
-            value={user.username}
-            onChange={(e) => setUser({ ...user, username: e.target.value })}
-            required
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input
-            id="email"
-            type="email"
-            placeholder="m@example.com"
-            value={user.email}
-            onChange={(e) => setUser({ ...user, email: e.target.value })}
-            required
-          />
-          <FieldDescription>
-            We&apos;ll use this to contact you. We will not share your email
-            with anyone else.
-          </FieldDescription>
-        </Field>
+        <Controller
+          name="username"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="username">Username</FieldLabel>
+              <Input {...field} id="username" placeholder="John Doe" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          render={({ field, fieldState }) => (
+            <Field>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+              />
+              <FieldDescription>
+                We&apos;ll use this to contact you. We will not share your email
+                with anyone else.
+              </FieldDescription>
+            </Field>
+          )}
+        />
         <Field>
           <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input
-            id="password"
-            type="password"
-            value={user.password}
-            onChange={(e) => setUser({ ...user, password: e.target.value })}
-            required
-          />
+          <Input id="password" type="password" required />
           <FieldDescription>
             Must be at least 8 characters long.
           </FieldDescription>

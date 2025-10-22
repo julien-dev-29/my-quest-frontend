@@ -6,8 +6,10 @@ function Home() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main>
-        <SidebarTrigger />
+      <main className="w-full">
+        <header className="p-5 border fixed z-50 bg-white w-full">
+          <SidebarTrigger />
+        </header>
         <Outlet />
       </main>
     </SidebarProvider>

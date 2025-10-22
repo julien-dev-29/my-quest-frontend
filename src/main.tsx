@@ -8,7 +8,8 @@ import Home from "./Home";
 import AuthLayout from "./components/layouts/AuthLayout";
 import Login from "./components/pages/auth/Login";
 import Register from "./components/pages/auth/Register";
-import Stories from "./components/pages/stories/Stories";
+import Posts from "./components/pages/posts/Posts";
+import { Toaster } from "sonner";
 
 const router = createBrowserRouter([
   {
@@ -16,12 +17,12 @@ const router = createBrowserRouter([
     Component: Root,
     children: [
       {
-        path: "admin",
+        path: "posts",
         Component: Home,
         children: [
           {
             index: true,
-            Component: Stories,
+            Component: Posts,
           },
         ],
       },
@@ -40,5 +41,6 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RouterProvider router={router} />
+    <Toaster />
   </StrictMode>
 );

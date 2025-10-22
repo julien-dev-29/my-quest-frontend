@@ -1,32 +1,7 @@
 import { LoginForm } from "@/components/login-form";
-import type { User } from "@/types/types";
 import { GalleryVerticalEnd } from "lucide-react";
-import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router";
 
 function Login() {
-  const [user, setUser] = useState<User>({
-    username: "",
-    password: "",
-    email: "",
-  });
-  const navigate = useNavigate();
-  const handleLogin = (e: FormEvent) => {
-    e.preventDefault();
-    fetch("http://localhost:3000/login", {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify(user),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data.message);
-        navigate("/admin");
-      })
-      .catch((err) => console.log(err.error));
-  };
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
@@ -40,12 +15,7 @@ function Login() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <LoginForm
-              className=""
-              user={user}
-              setUser={setUser}
-              handleLogin={handleLogin}
-            />
+            <LoginForm />
           </div>
         </div>
       </div>
