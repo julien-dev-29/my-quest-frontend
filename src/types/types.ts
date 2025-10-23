@@ -30,7 +30,7 @@ export type Post = {
 export type Comment = {
     id?: string
     post: Post
-    author: User
+    user: User
     content: string
     likes: Like[]
     createdAt: Date
@@ -39,9 +39,9 @@ export type Comment = {
 export type Like = {
     id?: string
     user: User
-    post: Post
-    comment: Comment
-    createdAt: Date
+    post?: Post
+    comment?: Comment
+    createdAt?: Date
 }
 
 export type Follow = {

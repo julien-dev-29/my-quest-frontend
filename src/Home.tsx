@@ -1,5 +1,5 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/my-components/AppSidebar.tsx";
+import { AppSidebar } from "@/components/my-components/sidebar/AppSidebar";
 import { Outlet } from "react-router";
 
 function Home() {

@@ -20,5 +20,8 @@ export default {
     getUserId: () => {
         const user: User = JSON.parse(localStorage.getItem("user")!) ?? false
         return user.id
+    },
+    logout: () => {
+        localStorage.removeItem("token")
     }
 }

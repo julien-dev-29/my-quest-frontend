@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Controller, useForm, type SubmitHandler } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
   Field,
   FieldDescription,
@@ -10,26 +10,28 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 const formSchema = z
   .object({
-    username: z.string(),
-    email: z.email(),
-    password: z.string(),
-    confirmPassword: z.string(),
+    username: z.string().min(2),
+    email: z.email().includes("@"),
+    password: z.string().min(4),
+    confirmPassword: z.string().min(4),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords must be the same",
-    path: ["confirmPassword"], // cible le champ confirmPassword pour afficher l’erreur
+    path: ["confirmPassword"],
   });
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -41,8 +43,17 @@ export function SignupForm({
   });
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    console.log(data);
+    fetch("http://localhost:3000/register", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+      .then((res) => res.json())
+      .then((data) => toast.info(data))
+      .catch((err) => toast.error(err));
+    navigate("/auth/login");
   }
 
   return (
@@ -63,41 +74,73 @@ export function SignupForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="username">Username</FieldLabel>
-              <Input {...field} id="username" placeholder="John Doe" />
+              <FieldLabel htmlFor={field.name}>Username</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                placeholder="John Doe"
+              />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
         <Controller
+          name="email"
+          control={form.control}
           render={({ field, fieldState }) => (
-            <Field>
+            <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="email">Email</FieldLabel>
               <Input
-                id="email"
-                type="email"
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
                 placeholder="m@example.com"
-                required
               />
               <FieldDescription>
                 We&apos;ll use this to contact you. We will not share your email
                 with anyone else.
               </FieldDescription>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
-        <Field>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input id="password" type="password" required />
-          <FieldDescription>
-            Must be at least 8 characters long.
-          </FieldDescription>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-          <Input id="confirm-password" type="password" required />
-          <FieldDescription>Please confirm your password.</FieldDescription>
-        </Field>
+        <Controller
+          name="password"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <Input
+                {...field}
+                id="password"
+                aria-invalid={fieldState.invalid}
+                type="password"
+              />
+              <FieldDescription>
+                Must be at least 8 characters long.
+              </FieldDescription>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="confirmPassword"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Confirm Password</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                type="password"
+              />
+              <FieldDescription>Please confirm your password.</FieldDescription>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
         <Field>
           <Button type="submit">Create Account</Button>
         </Field>
