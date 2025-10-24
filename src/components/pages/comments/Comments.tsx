@@ -4,14 +4,19 @@ import CommentItem from "./CommentItem";
 
 type Props = {
   post: Post;
-  setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
+  handleComment: (data: { postId: string; content: string; parentId?: string }) => void;
 };
 
-function Comments({ post, setPosts }: Props) {
+function Comments({ post, handleComment }: Props) {
   return (
     <CardContent className="flex flex-col gap-4">
       {post.comments?.map((comment) => (
-        <CommentItem post={post} setPosts={setPosts} comment={comment}/>
+        <CommentItem
+          key={comment.id}
+          postId={post.id!}
+          comment={comment}
+          handleComment={handleComment}
+        />
       ))}
     </CardContent>
   );

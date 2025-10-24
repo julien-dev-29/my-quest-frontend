@@ -1,18 +1,28 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
-import CreateCommentForm from "./CreateCommentForm";
-import type { Comment, Post } from "@/types/types";
+import type { Comment } from "@/types/types";
 import { useState } from "react";
+import CreateCommentForm from "./CreateCommentForm";
 
 type Props = {
-  post: Post;
-  setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
+  postId: string;
   comment: Comment;
+  handleComment: (data: {
+    postId: string;
+    content: string;
+    parentId?: string;
+  }) => void;
 };
 
-function CommentItem({ post, setPosts, comment }: Props) {
-  const [showComments, setShowComments] = useState(false);
+function CommentItem({ postId, comment, handleComment }: Props) {
+  const [showReplyForm, setShowReplyForm] = useState(false);
+
+  const onReplySubmit = (data: { content: string }) => {
+    handleComment({ postId, content: data.content, parentId: comment.id });
+    setShowReplyForm(false);
+  };
+
   return (
     <div className="flex flex-col justify-between items-start gap-4">
       <div className="flex items-center gap-2">
@@ -23,15 +33,6 @@ function CommentItem({ post, setPosts, comment }: Props) {
         {comment.user.username}
       </div>
       <div>{comment.content}</div>
-      {showComments && (
-        <div className="w-full">
-          <CreateCommentForm
-            post={post}
-            setPosts={setPosts}
-            setShowComments={setShowComments}
-          />
-        </div>
-      )}
       <div className="flex items-center gap-0.5 mt-1.5">
         <Button size="sm" type="button">
           <Heart />
@@ -43,10 +44,22 @@ function CommentItem({ post, setPosts, comment }: Props) {
             </span>
           )}
         </Button>
-        <Button variant="teal" size="sm" onClick={() => setShowComments(true)}>
-          Répondre
+        <Button
+          variant="teal"
+          size="sm"
+          onClick={() => setShowReplyForm((prev) => !prev)}
+        >
+          Reply
         </Button>
       </div>
+      {showReplyForm && (
+        <div className="w-full pl-8">
+          <CreateCommentForm
+            onSubmit={onReplySubmit}
+            onCancel={() => setShowReplyForm(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }

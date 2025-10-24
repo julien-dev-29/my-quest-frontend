@@ -4,58 +4,44 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SendIcon } from "lucide-react";
 import auth from "@/store/auth";
-import type { Post } from "@/types/types";
 
-const ZPost = z.object({
+const formSchema = z.object({
   content: z.string().min(2).max(255),
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 type FormProps = {
   isVisible: boolean;
   setIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
+  onSubmit: (data: FormValues) => void;
   className?: string;
 };
 
 function CreatePostForm({
   isVisible,
   setIsVisible,
-  setPosts,
+  onSubmit,
   className,
 }: FormProps) {
-  const form = useForm<z.infer<typeof ZPost>>({
-    resolver: zodResolver(ZPost),
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       content: "",
     },
   });
-  function onSubmit(data: z.infer<typeof ZPost>) {
-    fetch("http://localhost:3000/api/posts", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${auth.getToken()}`,
-      },
-      method: "POST",
-      body: JSON.stringify({ ...data, userId: auth.getUserId() }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        toast.info(data.message);
-        setPosts((prev) => [data.post, ...prev]);
-      })
-      .catch((err) => {
-        toast.error(err);
-        console.log(err);
-      });
-    setIsVisible(false);
-  }
+
+  const handleFormSubmit = (data: FormValues) => {
+    onSubmit(data);
+    form.reset();
+  };
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -84,7 +70,10 @@ function CreatePostForm({
               </div>
             </CardHeader>
             <CardContent>
-              <form id="form-post" onSubmit={form.handleSubmit(onSubmit)}>
+              <form
+                id="form-post"
+                onSubmit={form.handleSubmit(handleFormSubmit)}
+              >
                 <FieldGroup>
                   <Controller
                     name="content"

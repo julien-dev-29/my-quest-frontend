@@ -1,4 +1,4 @@
-import { Book, Inbox, Search, Settings, TestTube } from "lucide-react";
+import { Book, Inbox, LogOut, Search, Settings, TestTube } from "lucide-react";
 
 import {
   Sidebar,
@@ -10,7 +10,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
+import auth from "@/store/auth";
 
 // Menu items.
 const items = [
@@ -42,6 +43,13 @@ const items = [
 ];
 
 export function AppSidebar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    auth.logout();
+    navigate("/login");
+  };
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -59,6 +67,12 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleLogout}>
+                  <LogOut />
+                  <span>Logout</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

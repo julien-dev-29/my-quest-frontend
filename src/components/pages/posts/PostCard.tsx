@@ -10,65 +10,30 @@ import auth from "@/store/auth";
 import type { Post } from "@/types/types";
 import { MessageCircle, ThumbsUpIcon } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
-import CreateCommentForm from "../comments/CreateCommentForm";
 import Comments from "../comments/Comments";
+import CreateCommentForm from "../comments/CreateCommentForm";
 
 type Props = {
   post: Post;
-  posts: Post[];
-  setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
+  handleLike: (post: Post) => void;
+  handleComment: (data: { postId: string; content: string }) => void;
 };
 
-function PostCard({ post, setPosts }: Props) {
+function PostCard({ post, handleLike, handleComment }: Props) {
   const [showComments, setShowComments] = useState<boolean>(false);
   const currentUser = auth.getUser();
   const hasLiked = !!post.likes?.some(
     (like) => like.user?.id === currentUser?.id
   );
-  const handleLike = async () => {
-    if (!currentUser) {
-      toast.error("Vous devez être connecté pour aimer un post.");
-      return;
-    }
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === post.id
-          ? {
-              ...p,
-              likes: hasLiked
-                ? p.likes?.filter((like) => like.user?.id !== currentUser.id)
-                : [...(p.likes || []), { user: currentUser, post }],
-            }
-          : p
-      )
-    );
-
-    try {
-      const res = await fetch(
-        `http://localhost:3000/api/posts/${post.id}/like`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${auth.getToken()}`,
-          },
-          method: hasLiked ? "DELETE" : "POST",
-          body: JSON.stringify({ userId: currentUser.id }),
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erreur lors du like");
-
-      toast.success(hasLiked ? "Like retiré 👍" : "Post liké ❤️");
-    } catch (err) {
-      console.error(err);
-      toast.error("Une erreur est survenue.");
-    }
-  };
 
   const likesCount = post.likes?.length || 0;
   const commentsCount = post.comments?.length || 0;
+
+  const onCommentSubmit = (data: { content: string }) => {
+    if (!post.id) return;
+    handleComment({ postId: post.id, content: data.content });
+    setShowComments(false);
+  };
 
   return (
     <Card>
@@ -108,7 +73,7 @@ function PostCard({ post, setPosts }: Props) {
             >
               <MessageCircle className="w-4 h-4" />
             </Button>
-            <Button variant="secondary" size="icon" onClick={handleLike}>
+            <Button variant="secondary" size="icon" onClick={() => handleLike(post)}>
               <ThumbsUpIcon
                 className={`w-4 h-4 transition-transform ${
                   hasLiked ? "text-blue-600 scale-110" : ""
@@ -118,13 +83,12 @@ function PostCard({ post, setPosts }: Props) {
           </div>
         </div>
       </CardFooter>
-      {showComments && (
+      {showComments && post.id && (
         <div>
-          <Comments post={post} setPosts={setPosts} />
+          <Comments post={post} handleComment={handleComment} />
           <CreateCommentForm
-            post={post}
-            setPosts={setPosts}
-            setShowComments={setShowComments}
+            onSubmit={onCommentSubmit}
+            onCancel={() => setShowComments(false)}
           />
         </div>
       )}

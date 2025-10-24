@@ -1,41 +1,85 @@
 import { Button } from "@/components/ui/button";
-
-import auth from "@/store/auth";
-import type { Post } from "@/types/types";
-import { useEffect, useState } from "react";
-
+import { useState } from "react";
 import { SendIcon } from "lucide-react";
 import CreatePostForm from "./CreatePostForm";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
+import type { Post } from "@/types/types";
+import {
+  createPost,
+  fetchPosts,
+  likePost,
+  unlikePost,
+  createComment,
+} from "@/fetchs/fetch";
 import PostCard from "./PostCard";
-import { useNavigate } from "react-router";
+import auth from "@/store/auth";
 
 function Posts() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const queryClient = useQueryClient();
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [currentPage] = useState<number>(1);
-  const navigate = useNavigate();
-  const token = auth.getToken();
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:3000/api/posts?p=${currentPage}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (res.status === 401) {
-          auth.logout();
-          navigate("/auth/login");
-        }
-        const data = await res.json();
-        setPosts(data.posts);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchPosts();
-  }, [currentPage, token, navigate]);
+
+  const postsQuery = useQuery({
+    queryKey: ["posts"],
+    queryFn: fetchPosts,
+  });
+
+  const newPostMutation = useMutation({
+    mutationFn: createPost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      setIsVisible(false);
+      toast.success("Post created successfully!");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const likeMutation = useMutation({
+    mutationFn: (post: Post) => {
+      const currentUser = auth.getUser();
+      const hasLiked = !!post.likes?.some(
+        (like) => like.user?.id === currentUser?.id
+      );
+      return hasLiked ? unlikePost(post.id!) : likePost(post.id!);    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      toast.success("Success");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
+
+  const commentMutation = useMutation({
+    mutationFn: createComment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      toast.success("Comment added!");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleCreatePost = (data: { content: string }) => {
+    newPostMutation.mutate(data);
+  };
+
+  const handleLike = (post: Post) => {
+    if (!post.id) return;
+    likeMutation.mutate(post);
+  };
+
+  const handleComment = (data: { postId: string; content: string }) => {
+    commentMutation.mutate(data);
+  };
+
+  if (postsQuery.isPending) return <Spinner />;
+  if (postsQuery.isError) return toast.error("Error fetching posts");
+
   return (
     <div className="p-5 w-full relative">
       <h1>Posts</h1>
@@ -46,12 +90,12 @@ function Posts() {
         </Button>
       </div>
       <div className="w-2xl flex flex-col gap-2 mt-5">
-        {posts.map((post) => (
+        {postsQuery.data?.posts.map((post: Post) => (
           <PostCard
             key={post.id}
             post={post}
-            posts={posts}
-            setPosts={setPosts}
+            handleLike={handleLike}
+            handleComment={handleComment}
           />
         ))}
       </div>
@@ -59,7 +103,7 @@ function Posts() {
         <CreatePostForm
           isVisible={isVisible}
           setIsVisible={setIsVisible}
-          setPosts={setPosts}
+          onSubmit={handleCreatePost}
         />
       )}
     </div>
