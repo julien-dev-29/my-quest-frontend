@@ -11,7 +11,7 @@ type Props = {
   handleComment: (data: {
     postId: string;
     content: string;
-    parentId?: string;
+    parentId: string | null;
   }) => void;
 };
 
@@ -19,7 +19,11 @@ function CommentItem({ postId, comment, handleComment }: Props) {
   const [showReplyForm, setShowReplyForm] = useState(false);
 
   const onReplySubmit = (data: { content: string }) => {
-    handleComment({ postId, content: data.content, parentId: comment.id });
+    handleComment({
+      postId,
+      content: data.content,
+      parentId: comment.id ?? null,
+    });
     setShowReplyForm(false);
   };
 
@@ -55,6 +59,7 @@ function CommentItem({ postId, comment, handleComment }: Props) {
       {showReplyForm && (
         <div className="w-full pl-8">
           <CreateCommentForm
+            parentId={comment.id ?? null}
             onSubmit={onReplySubmit}
             onCancel={() => setShowReplyForm(false)}
           />

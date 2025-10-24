@@ -12,7 +12,7 @@ import {
   likePost,
   unlikePost,
   createComment,
-} from "@/fetchs/fetch";
+} from "@/api/api";
 import PostCard from "./PostCard";
 import auth from "@/store/auth";
 
@@ -43,14 +43,15 @@ function Posts() {
       const hasLiked = !!post.likes?.some(
         (like) => like.user?.id === currentUser?.id
       );
-      return hasLiked ? unlikePost(post.id!) : likePost(post.id!);    },
+      return hasLiked ? unlikePost(post.id!) : likePost(post.id!);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       toast.success("Success");
     },
     onError: (error) => {
       toast.error(error.message);
-    }
+    },
   });
 
   const commentMutation = useMutation({
@@ -73,11 +74,16 @@ function Posts() {
     likeMutation.mutate(post);
   };
 
-  const handleComment = (data: { postId: string; content: string }) => {
+  const handleComment = (data: {
+    postId: string;
+    content: string;
+    parentId: string | null;
+  }) => {
     commentMutation.mutate(data);
   };
 
   if (postsQuery.isPending) return <Spinner />;
+
   if (postsQuery.isError) return toast.error("Error fetching posts");
 
   return (

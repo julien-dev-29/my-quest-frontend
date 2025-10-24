@@ -16,7 +16,11 @@ import CreateCommentForm from "../comments/CreateCommentForm";
 type Props = {
   post: Post;
   handleLike: (post: Post) => void;
-  handleComment: (data: { postId: string; content: string }) => void;
+  handleComment: (data: {
+    postId: string;
+    content: string;
+    parentId: string | null;
+  }) => void;
 };
 
 function PostCard({ post, handleLike, handleComment }: Props) {
@@ -25,13 +29,16 @@ function PostCard({ post, handleLike, handleComment }: Props) {
   const hasLiked = !!post.likes?.some(
     (like) => like.user?.id === currentUser?.id
   );
-
   const likesCount = post.likes?.length || 0;
   const commentsCount = post.comments?.length || 0;
 
-  const onCommentSubmit = (data: { content: string }) => {
+  const onCommentSubmit = (data: { content: string }, parentId: string) => {
     if (!post.id) return;
-    handleComment({ postId: post.id, content: data.content });
+    handleComment({
+      postId: post.id,
+      content: data.content,
+      parentId: parentId,
+    });
     setShowComments(false);
   };
 
@@ -73,7 +80,11 @@ function PostCard({ post, handleLike, handleComment }: Props) {
             >
               <MessageCircle className="w-4 h-4" />
             </Button>
-            <Button variant="secondary" size="icon" onClick={() => handleLike(post)}>
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={() => handleLike(post)}
+            >
               <ThumbsUpIcon
                 className={`w-4 h-4 transition-transform ${
                   hasLiked ? "text-blue-600 scale-110" : ""
@@ -87,6 +98,7 @@ function PostCard({ post, handleLike, handleComment }: Props) {
         <div>
           <Comments post={post} handleComment={handleComment} />
           <CreateCommentForm
+            parentId={null}
             onSubmit={onCommentSubmit}
             onCancel={() => setShowComments(false)}
           />

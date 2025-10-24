@@ -1,10 +1,14 @@
 import { CardContent } from "@/components/ui/card";
 import type { Post } from "@/types/types";
-import CommentItem from "./CommentItem";
+import CommentItem from "./CommentItem.tsx";
 
 type Props = {
   post: Post;
-  handleComment: (data: { postId: string; content: string; parentId?: string }) => void;
+  handleComment: (data: {
+    postId: string;
+    content: string;
+    parentId: string | null;
+  }) => void;
 };
 
 function Comments({ post, handleComment }: Props) {

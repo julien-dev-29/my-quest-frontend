@@ -8,7 +8,8 @@ import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
 type Props = {
-  onSubmit: (data: z.infer<typeof formSchema>) => void;
+  parentId: string | null;
+  onSubmit: (data: z.infer<typeof formSchema>, parentId: string) => void;
   onCancel: () => void;
 };
 
@@ -16,8 +17,7 @@ const formSchema = z.object({
   content: z.string().min(2),
 });
 
-function 
-CreateCommentForm({ onSubmit, onCancel }: Props) {
+function CreateCommentForm({ parentId, onSubmit, onCancel }: Props) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -26,7 +26,7 @@ CreateCommentForm({ onSubmit, onCancel }: Props) {
   });
 
   const handleFormSubmit = (data: z.infer<typeof formSchema>) => {
-    onSubmit(data);
+    onSubmit(data, parentId!);
     form.reset();
   };
 
@@ -43,7 +43,7 @@ CreateCommentForm({ onSubmit, onCancel }: Props) {
                 aria-invalid={fieldState.invalid}
                 placeholder="Add a comment..."
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />} 
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
@@ -52,11 +52,7 @@ CreateCommentForm({ onSubmit, onCancel }: Props) {
             Add
             <CirclePlusIcon />{" "}
           </Button>
-          <Button
-            variant="destructive"
-            type="button"
-            onClick={onCancel}
-          >
+          <Button variant="destructive" type="button" onClick={onCancel}>
             Close
           </Button>
         </div>
