@@ -12,6 +12,9 @@ export const fetchPosts = async () => {
     const res = await fetch(`http://localhost:3000/api/posts?p=${1}`, {
         headers: { Authorization: `Bearer ${auth.getToken()}` },
     });
+    if (res.status === 401) {
+        throw new Error("unauthorized");
+    }
     return await res.json();
 };
 
@@ -58,7 +61,7 @@ export const createComment = async ({ postId, content, parentId }: {
             userId: auth.getUserId(),
             postId: postId,
             content: content,
-            parentId: parentId || null
+            parentId: parentId ?? null
         }),
     });
     if (!res.ok) {

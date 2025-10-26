@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SendIcon } from "lucide-react";
 import CreatePostForm from "./CreatePostForm";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,15 +15,27 @@ import {
 } from "@/api/api";
 import PostCard from "./PostCard";
 import auth from "@/store/auth";
+import { useNavigate } from "react-router";
 
 function Posts() {
   const queryClient = useQueryClient();
   const [isVisible, setIsVisible] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const postsQuery = useQuery({
     queryKey: ["posts"],
     queryFn: fetchPosts,
   });
+
+  useEffect(() => {
+    if (
+      postsQuery.error instanceof Error &&
+      postsQuery.error.message === "unauthorized"
+    ) {
+      auth.logout();
+      navigate("/auth/login");
+    }
+  }, [postsQuery.error, navigate]);
 
   const newPostMutation = useMutation({
     mutationFn: createPost,
@@ -37,17 +49,23 @@ function Posts() {
     },
   });
 
+  const hasLiked = (post: Post) => {
+    const currentUser = auth.getUser();
+    const hasLiked = !!post.likes?.some(
+      (like) => like.user?.id === currentUser?.id
+    );
+    return hasLiked;
+  };
+
   const likeMutation = useMutation({
     mutationFn: (post: Post) => {
-      const currentUser = auth.getUser();
-      const hasLiked = !!post.likes?.some(
-        (like) => like.user?.id === currentUser?.id
-      );
-      return hasLiked ? unlikePost(post.id!) : likePost(post.id!);
+      return hasLiked(post) ? unlikePost(post.id!) : likePost(post.id!);
     },
-    onSuccess: () => {
+    onSuccess: (post: Post) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
-      toast.success("Success");
+      toast.success(
+        hasLiked(post) ? "You 👍 the post" : "You are not 👍 the post anymore"
+      );
     },
     onError: (error) => {
       toast.error(error.message);

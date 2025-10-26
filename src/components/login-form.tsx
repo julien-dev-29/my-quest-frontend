@@ -48,7 +48,7 @@ export function LoginForm({
       .then((data) => {
         auth.storeToken(data.token);
         auth.storeUser(data.user);
-        navigate("/posts");
+        navigate("/");
       })
       .catch((err) => console.log(err));
   }

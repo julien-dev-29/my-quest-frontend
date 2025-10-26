@@ -12,16 +12,20 @@ type Props = {
 };
 
 function Comments({ post, handleComment }: Props) {
+  const rootComments = post.comments?.filter((c) => !c.parentId) ?? [];
   return (
     <CardContent className="flex flex-col gap-4">
-      {post.comments?.map((comment) => (
-        <CommentItem
-          key={comment.id}
-          postId={post.id!}
-          comment={comment}
-          handleComment={handleComment}
-        />
-      ))}
+      {rootComments.map((comment) =>
+        comment.parentId ? null : (
+          <div key={comment.id} className="flex flex-col gap-2">
+            <CommentItem
+              postId={post.id!}
+              comment={comment}
+              handleComment={handleComment}
+            />
+          </div>
+        )
+      )}
     </CardContent>
   );
 }

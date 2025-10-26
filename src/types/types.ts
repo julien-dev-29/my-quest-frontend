@@ -32,7 +32,9 @@ export type Comment = {
     post: Post
     user: User
     content: string
-    likes: Like[]
+    parentId: string
+    likes?: Like[]
+    replies?: Comment[]
     createdAt: Date
 }
 

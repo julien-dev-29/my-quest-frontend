@@ -24,40 +24,55 @@ function CommentItem({ postId, comment, handleComment }: Props) {
       content: data.content,
       parentId: comment.id ?? null,
     });
-    setShowReplyForm(false);
+    setShowReplyForm(false); // ✅ referme le form après envoi
   };
 
   return (
-    <div className="flex flex-col justify-between items-start gap-4">
+    <div className="flex flex-col justify-between items-start gap-3 border-l pl-4 mt-3">
+      {/* --- Comment principal --- */}
       <div className="flex items-center gap-2">
         <Avatar>
           <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
-        {comment.user.username}
+        <span className="font-semibold">{comment.user.username}</span>
       </div>
-      <div>{comment.content}</div>
-      <div className="flex items-center gap-0.5 mt-1.5">
-        <Button size="sm" type="button">
-          <Heart />
-          {comment.likes.length > 0 && (
-            <span>
-              {comment.likes.map((like) => (
-                <span key={like.id}>1</span>
-              ))}
-            </span>
-          )}
+
+      <div className="text-gray-700">{comment.content}</div>
+
+      <div className="flex items-center gap-2 mt-1">
+        <Button size="sm" variant="ghost" type="button">
+          <Heart className="w-4 h-4" />
+          {comment.likes?.length ? (
+            <span className="ml-1 text-sm">{comment.likes.length}</span>
+          ) : null}
         </Button>
         <Button
-          variant="teal"
+          variant="outline"
           size="sm"
           onClick={() => setShowReplyForm((prev) => !prev)}
         >
           Reply
         </Button>
       </div>
+
+      {/* --- Sous-commentaires --- */}
+      {comment.replies && comment.replies?.length > 0 && (
+        <div className="ml-6 mt-2">
+          {comment.replies.map((reply) => (
+            <CommentItem
+              key={reply.id}
+              postId={postId}
+              comment={reply}
+              handleComment={handleComment}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* --- Formulaire de réponse --- */}
       {showReplyForm && (
-        <div className="w-full pl-8">
+        <div className="w-full mt-3 ml-6">
           <CreateCommentForm
             parentId={comment.id ?? null}
             onSubmit={onReplySubmit}
