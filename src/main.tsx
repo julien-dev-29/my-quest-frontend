@@ -13,6 +13,7 @@ import Register from "./components/pages/auth/Register";
 import Posts from "./components/pages/posts/Posts";
 import { Toaster } from "sonner";
 import Test from "./components/tests/Test";
+import Profile from "./components/pages/users/Profile";
 
 const queryCLient = new QueryClient();
 
@@ -29,8 +30,13 @@ const router = createBrowserRouter([
             index: true,
             Component: Posts,
           },
+          {
+            path: "profile",
+            Component: Profile,
+          },
         ],
       },
+
       {
         path: "auth",
         Component: AuthLayout,

@@ -4,15 +4,15 @@ import { Outlet } from "react-router";
 
 function Home() {
   return (
-      <SidebarProvider>
-        <AppSidebar />
-        <main className="w-full">
-          <header className="p-5 border fixed z-50 bg-white w-full">
-            <SidebarTrigger />
-          </header>
-          <Outlet />
-        </main>
-      </SidebarProvider>
+    <SidebarProvider>
+      <AppSidebar />
+      <main className="w-full">
+        <header className="p-5 border bg-white w-full">
+          <SidebarTrigger />
+        </header>
+        <Outlet />
+      </main>
+    </SidebarProvider>
   );
 }
 
